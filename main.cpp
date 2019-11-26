@@ -1,4 +1,5 @@
 #include <windows.h>
+#include "vector.h"
 
 #define WINDOW_CAPTION "HEZ"
 #define WINDOW_WIDTH 640
