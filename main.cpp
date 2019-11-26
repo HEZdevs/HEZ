@@ -1,6 +1,8 @@
 #include <windows.h>
 #include "vector.h"
 
+#include <sstream>
+
 #define WINDOW_CAPTION "HEZ"
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
@@ -44,6 +46,12 @@ void drawFrame(pixel *pixels) {
 
 
 DWORD WINAPI tickThreadProc(HANDLE handle) {
+		vector v(1.0f, 0.0f, 1.0f);
+	v.normalize();
+	std::stringstream ss;
+	ss << v.x << " " << v.y << " " << v.z;
+	MessageBox(hwnd, ss.str().c_str(), "Vector Test", 0);
+	
   Sleep( 50 );
   ShowWindow( hwnd, SW_SHOW );
   HDC hdc = GetDC( hwnd );
