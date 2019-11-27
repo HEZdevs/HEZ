@@ -46,10 +46,10 @@ void drawFrame(pixel *pixels) {
 
 
 DWORD WINAPI tickThreadProc(HANDLE handle) {
-		vector v(1.0f, 0.0f, 1.0f);
-	v.normalize();
+		vector v(1.0f, 1.0f, 0.0f); //вектор, который в двумерном пространстве как из 0,0 в 1,1. 
+	v.normalize(); //нормализуем, длина = 1
 	std::stringstream ss;
-	ss << v.x << " " << v.y << " " << v.z;
+	ss << v.x << " " << v.y << " " << v.z; // x и y == 1 делить на корень из 2 т.к. длина вектора изначально будет равна корню из 2 (как диагональ квадрата 1 на 1)
 	MessageBox(hwnd, ss.str().c_str(), "Vector Test", 0);
 	
   Sleep( 50 );
