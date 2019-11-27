@@ -1,34 +1,23 @@
 #include <windows.h>
-#include "vector.h"
-
 #include <sstream>
+#include "vector.h"
+#include "color.h"
+using namespace hez;
 
 #define WINDOW_CAPTION "HEZ"
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
 #define FPS 50
 
-struct pixel {
-  union {
-    struct {
-      unsigned char b, g, r, a;
-    };
-    int val;
-  };
-  pixel() {
-    val = 0;
-  }
-};
-
 //global
 HBITMAP hbmp;
 HANDLE hTickThread;
 HWND hwnd;
 HDC hdcMem;
-pixel *pixels;
+color *pixels;
 
-void drawFrame(pixel *pixels) {
-  pixel *p;
+void drawFrame(color *pixels) {
+  color *p;
   int yw;
   float px, py;
   for (int y = 0; y < WINDOW_HEIGHT; ++y) {
