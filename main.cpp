@@ -2,6 +2,8 @@
 #include <sstream>
 #include "vector.h"
 #include "color.h"
+#include "matrix.h"
+#include "renderer.h"
 using namespace hez;
 
 #define WINDOW_CAPTION "HEZ"
@@ -14,47 +16,31 @@ HBITMAP hbmp;
 HANDLE hTickThread;
 HWND hwnd;
 HDC hdcMem;
-color *pixels;
 
-void drawFrame(color *pixels) {
-  color *p;
-  int yw;
-  float px, py;
-  for (int y = 0; y < WINDOW_HEIGHT; ++y) {
-  	yw = y * WINDOW_WIDTH;
-    for (int x = 0; x < WINDOW_WIDTH; ++x) {
-      p = &pixels[yw + x];
-      px = float(x) / float(WINDOW_WIDTH);
-      py = float(y) / float(WINDOW_HEIGHT);
-      p->r = (unsigned char)(px * 255);
-      p->g = (unsigned char)(py * 255);
-      p->b = 255;
-    }
-  }
+void initRenderer()
+{
+	rInitialize(WINDOW_WIDTH, WINDOW_HEIGHT);
+}
+
+void drawFrame() {
+  rFill(rgba(120, 160, 220, 255));
+  //здесь можно рисовать используя
+  //rSetPixel(cl, x, y);
+  //rDrawLine(cl, x1, y1, x2, y2);
+  //(x,y - int; cl - color)
 }
 
 
 DWORD WINAPI tickThreadProc(HANDLE handle) {
-		vector v(1.0f, 1.0f, 0.0f); //вектор, который в двумерном пространстве как из 0,0 в 1,1. 
-	v.normalize(); //нормализуем, длина = 1
-	v = -v;
-	std::stringstream ss;
-	ss << v.x << " " << v.y << " " << v.z; // x и y == 1 делить на корень из 2 т.к. длина вектора изначально будет равна корню из 2 (как диагональ квадрата 1 на 1)
-	MessageBox(hwnd, ss.str().c_str(), "Vector Test", 0);
-	
   Sleep( 50 );
   ShowWindow( hwnd, SW_SHOW );
   HDC hdc = GetDC( hwnd );
   hdcMem = CreateCompatibleDC( hdc );
   HBITMAP hbmOld = (HBITMAP)SelectObject( hdcMem, hbmp );
-  // Milliseconds to wait each frame
   int delay = 1000 / FPS;
   while(true) {
-    // Do stuff with pixels
-    drawFrame( pixels );
-    // Draw pixels to window
+    drawFrame( );
     BitBlt( hdc, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, hdcMem, 0, 0, SRCCOPY );
-    // Wait
     Sleep( delay );
   }
   SelectObject( hdcMem, hbmOld );
@@ -62,6 +48,7 @@ DWORD WINAPI tickThreadProc(HANDLE handle) {
 }
 
 void MakeSurface(HWND hwnd) {
+  initRenderer(); //hez
   BITMAPINFO bmi;
   bmi.bmiHeader.biSize = sizeof(BITMAPINFO);
   bmi.bmiHeader.biWidth = WINDOW_WIDTH;
@@ -80,7 +67,7 @@ void MakeSurface(HWND hwnd) {
   bmi.bmiColors[0].rgbReserved = 0;
   HDC hdc = GetDC( hwnd );
   // Create DIB section to always give direct access to pixels
-  hbmp = CreateDIBSection( hdc, &bmi, DIB_RGB_COLORS, (void**)&pixels, NULL, 0 );
+  hbmp = CreateDIBSection( hdc, &bmi, DIB_RGB_COLORS, (void**)&colorBuffer, NULL, 0 );
   DeleteDC( hdc );
   // Create a new thread to use as a timer
   hTickThread = CreateThread( NULL, NULL, &tickThreadProc, NULL, NULL, NULL );
