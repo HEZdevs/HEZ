@@ -6,6 +6,10 @@
 #include "renderer.h"
 using namespace hez;
 
+#define SCREEN_SPACE_X(x) ((int)(((x)+0.5f) * WINDOW_WIDTH))
+#define SCREEN_SPACE_Y(y) ((int)(((y)+0.5f) * WINDOW_HEIGHT))
+#define DBG_MSG(x) { std::stringstream ss; ss << x; MessageBox(hwnd, "", ss.str().c_str(), 0); }
+
 #define WINDOW_CAPTION "HEZ"
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
@@ -17,13 +21,25 @@ HANDLE hTickThread;
 HWND hwnd;
 HDC hdcMem;
 
+//rendering
+matrix projectionMatrix;
+
+void line(const color& cl, vector a, vector b)
+{
+	a = projectionMatrix.transform(a);
+	b = projectionMatrix.transform(b);
+	rDrawLine(cl, SCREEN_SPACE_X(a.x), SCREEN_SPACE_Y(a.y), SCREEN_SPACE_X(b.x), SCREEN_SPACE_Y(b.y));
+}
+
 void initRenderer()
 {
 	rInitialize(WINDOW_WIDTH, WINDOW_HEIGHT);
+	projectionMatrix = matrix::createProjectionPerspective(2.0f, WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 1000.0f);
 }
 
 void drawFrame() {
   rFill(rgba(120, 160, 220, 255));
+  line(rgba(0, 255, 128, 255), vector(0, 0, 0), vector(1, 1, 4));
   //здесь можно рисовать используя
   //rSetPixel(cl, x, y);
   //rDrawLine(cl, x1, y1, x2, y2);

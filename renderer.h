@@ -2,6 +2,8 @@
 #define RENDERER_H
 
 #include <algorithm>
+#include "vector.h"
+#include "color.h"
 
 namespace hez {	
 	extern const float DEPTH_MAX;
