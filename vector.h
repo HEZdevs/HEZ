@@ -38,6 +38,10 @@ namespace hez {
 			float length = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 			return vector(v.x / length, v.y / length, v.z / length);
 		}
+		// линейная интерполяция
+		static inline vector lerp(const vector& a, const vector& b, float t) {
+			return vector(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t);
+		}
 	};
 	/// перегрузка операторов
 	// сложение векторов
