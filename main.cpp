@@ -38,8 +38,8 @@ void initRenderer()
 }
 
 void drawFrame() {
-  rFill(rgba(120, 160, 220, 255));
-  line(rgba(0, 255, 128, 255), vector(0, 0, 0), vector(1, 1, 4));
+  rFill(color::rgba(120, 160, 220, 255));
+  line(color::rgba(0, 255, 128, 255), vector(0, 0, 0), vector(1, 1, 4));
   //здесь можно рисовать используя
   //rSetPixel(cl, x, y);
   //rDrawLine(cl, x1, y1, x2, y2);
