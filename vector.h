@@ -8,6 +8,11 @@ namespace hez {
 		float x, y, z;
 		// конструктор
 		inline vector(float _x, float _y, float _z) : x(_x), y(_y), z(_z) { };
+		// const
+		static const vector zero;
+		static const vector unitX;
+		static const vector unitY;
+		static const vector unitZ;
 		/// ? функции
 		// нормализует вектор
 		inline void normalize() {

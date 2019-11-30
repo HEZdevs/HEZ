@@ -59,6 +59,27 @@ namespace hez {
             m.m[3][2] = (nearPlane * farPlane) / (nearPlane - farPlane);
             return m;
 		}
+		//(инвертированная, я полагаю)
+		static inline matrix createViewLookAt(const vector& cameraPosition, const vector& cameraTarget, const vector& cameraUp) {
+			vector f = vector::normalize(cameraPosition - cameraTarget);
+            vector s = vector::normalize(vector::cross(f, cameraUp));
+            vector v = vector::cross(s, f);
+            matrix m;
+            m.m[0][0] = s.x;
+            m.m[0][1] = s.y;
+            m.m[0][2] = s.z;
+            m.m[0][3] = -vector::dot(s, cameraPosition);
+            m.m[1][0] = v.x;
+            m.m[1][1] = v.y;
+            m.m[1][2] = v.z;
+            m.m[1][3] = -vector::dot(v, cameraPosition);
+            m.m[2][0] = f.x;
+            m.m[2][1] = f.y;
+            m.m[2][2] = f.z;
+            m.m[2][3] = -vector::dot(f, cameraPosition);
+            m.m[3][3] = 1.0f;
+            return m;
+		}
 	};
 	
 	/// перегрузка операторов
