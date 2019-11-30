@@ -24,7 +24,7 @@ namespace hez {
 			m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = 0.0f; m[2][3] = 0.0f;
 			m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 0.0f;
 		}
-		///
+		/// возвращает вектор, умноженный на матрицу
 		inline vector transform(const vector& v) {
 			return vector(v.x * m[0][0] + v.y * m[1][0] + v.z * m[2][0] + m[3][0],
                           v.x * m[0][1] + v.y * m[1][1] + v.z * m[2][1] + m[3][1],
@@ -49,6 +49,7 @@ namespace hez {
             m.m[3][3] = 1.0f;
             return m;
 		}
+		// возвращает матрицу проекции
 		static inline matrix createProjectionPerspective(float fieldOfView, float aspectRatio, float nearPlane, float farPlane) {
 			matrix m;
             float a = 1.0f / tan(fieldOfView * 0.5f);
@@ -59,7 +60,8 @@ namespace hez {
             m.m[3][2] = (nearPlane * farPlane) / (nearPlane - farPlane);
             return m;
 		}
-		//(инвертированная, я полагаю)
+		// возвращает матрицу вида
+		//(инвертированную, я полагаю)
 		static inline matrix createViewLookAt(const vector& cameraPosition, const vector& cameraTarget, const vector& cameraUp) {
 			vector f = vector::normalize(cameraPosition - cameraTarget);
             vector s = vector::normalize(vector::cross(f, cameraUp));
