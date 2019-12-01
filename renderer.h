@@ -29,6 +29,19 @@ namespace hez {
 			colorBuffer[i] = cl;
 		}
 	}
+	inline void rSetPixelUnchecked(const color& cl, int x, int y) {
+		int i = rtWidth * y + x;
+		depthBuffer[i] = DEPTH_MAX;
+		colorBuffer[i] = cl;
+	}
+	inline void rSetPixelUnchecked(const color& cl, int x, int y, float z) {
+		int i = rtWidth * y + x;
+		if(depthBuffer[i] > z) 
+		{
+			depthBuffer[i] = z;
+			colorBuffer[i] = cl;
+		}
+	}
 	inline void rFill(const color& cl) {
 		std::fill(colorBuffer, colorBuffer + bufferSize, cl);
 		std::fill(depthBuffer, depthBuffer + bufferSize, DEPTH_MAX);
