@@ -3,7 +3,6 @@
 
 #include <cmath>
 #include "vector.h"
-using namespace std;
 
 namespace hez {
 	struct matrix {

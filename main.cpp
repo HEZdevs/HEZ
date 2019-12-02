@@ -37,6 +37,9 @@ vector cubePosition = vector(-0.5f, -0.5f, 3);
 //vector cubeScale = vector(1.0f, 1.0f, 1.0f);
 vector cubeRotation = vector(0.0f, 0.0f, 0.0f);
 
+float screenCenterX = WINDOW_WIDTH / 2.0f;
+float screenCenterY = WINDOW_HEIGHT / 2.0f;
+
 //
 float fovRad = 0.7f; 
 float zNearPlane = 0.1f;
@@ -72,7 +75,7 @@ void initRenderer()
 }
 
 void drawFrame() {
-  	rFill(color::rgba(120, 160, 220, 255));
+  	rFill(color::rgba(0, 0, 0, 255));
   	matrix cubeWorld = matrix::createRotationX(cubeRotation.x) * matrix::createRotationY(cubeRotation.y) * matrix::createRotationZ(cubeRotation.z);
   	cubeWorld = cubeWorld * matrix::createTranslation(cubePosition);
   	for(int i = 0; i < 12; i++)
@@ -80,9 +83,9 @@ void drawFrame() {
   		vector a = cubeWorld.transform(vertices[faces[i][0]]);
   		vector b = cubeWorld.transform(vertices[faces[i][1]]);
   		vector c = cubeWorld.transform(vertices[faces[i][2]]);
-  		line(color::rgba(0, 255, 128, 255),  a, b);
-  		line(color::rgba(0, 255, 128, 255),  b, c);
- 	 	line(color::rgba(0, 255, 128, 255),  c, a);
+  		line(color::rgba(0, 255, 0, 255),  a, b);
+  		line(color::rgba(0, 255, 0, 255),  b, c);
+ 	 	line(color::rgba(0, 255, 0, 255),  c, a);
   	}
 }
 
@@ -94,13 +97,14 @@ DWORD WINAPI tickThreadProc(HANDLE handle) {
   hdcMem = CreateCompatibleDC( hdc );
   HBITMAP hbmOld = (HBITMAP)SelectObject( hdcMem, hbmp );
   int delay = 1000 / FPS;
-  POINT lmp;
-  GetCursorPos(&lmp);
+  //POINT lmp;
+  //GetCursorPos(&lmp);
   while(true) {
   	POINT mp;
   	GetCursorPos(&mp);
-  	mouseDeltaX += camRotSpeed * (mp.x - lmp.x) / (float)WINDOW_WIDTH;
-  	mouseDeltaY -= camRotSpeed * (mp.y - lmp.y) / (float)WINDOW_HEIGHT;
+  	mouseDeltaX += camRotSpeed * (mp.x - screenCenterX) / (float)WINDOW_WIDTH;
+  	mouseDeltaY -= camRotSpeed * (mp.y - screenCenterY) / (float)WINDOW_HEIGHT;
+  	SetCursorPos((int)screenCenterX, (int)screenCenterY);
   	//
   	camRotation = matrix::createRotationX(mouseDeltaY) *  matrix::createRotationY(mouseDeltaX);
   	camCurRight = camRotation.transform(camRight);
@@ -111,7 +115,7 @@ DWORD WINAPI tickThreadProc(HANDLE handle) {
     drawFrame( );
     BitBlt( hdc, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, hdcMem, 0, 0, SRCCOPY );
     Sleep( delay );
-    lmp = mp;
+    //lmp = mp;
   }
   SelectObject( hdcMem, hbmOld );
   DeleteDC( hdc );
@@ -164,7 +168,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
       				cubePosition.x += 0.5f;
       				break;
       			case VK_SHIFT:
-      				camPos.y -= 0.5f;
+      				cubePosition.y += 0.5f;
+      				break;
+      			case VK_SPACE:
+      				cubePosition.y -= 0.5f;
       				break;
 			}
       		break;
@@ -181,6 +188,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case 'q': camPos = camPos + camCurUp * camSpeed;
 				break;
 				case 'e': camPos = camPos -  camCurUp * camSpeed;
+				break;
+				case 'm': PostQuitMessage(0);
 				break;
 			}
 			break;
