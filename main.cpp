@@ -122,7 +122,6 @@ DWORD WINAPI tickThreadProc(HANDLE handle) {
 }
 
 void MakeSurface(HWND hwnd) {
-  initRenderer(); //hez
   BITMAPINFO bmi;
   bmi.bmiHeader.biSize = sizeof(BITMAPINFO);
   bmi.bmiHeader.biWidth = WINDOW_WIDTH;
@@ -151,6 +150,7 @@ void MakeSurface(HWND hwnd) {
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	switch(Message) {
 		case WM_CREATE:
+			initRenderer(); 
        		MakeSurface( hwnd );
       		break;
       	case WM_KEYDOWN: 
@@ -211,8 +211,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	wc.cbSize		 = sizeof(WNDCLASSEX);
 	wc.lpfnWndProc	 = WndProc; 
 	wc.hInstance	 = hInstance;
-	wc.hCursor		 = LoadCursor(NULL, IDC_ARROW);
-	
+	//wc.hCursor		 = LoadCursor(NULL, IDC_ARROW);
+	ShowCursor(NULL); //hides cursor
 	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
 	wc.lpszClassName = "WindowClass";
 	wc.hIcon		 = LoadIcon(NULL, IDI_APPLICATION);
@@ -226,7 +226,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		WINDOW_WIDTH, 
 		WINDOW_HEIGHT, 
 		NULL, NULL, hInstance, NULL);
-	
+		
 	while(GetMessage(&msg, NULL, 0, 0) > 0) {
 		TranslateMessage(&msg);
 		DispatchMessage(&msg); 
