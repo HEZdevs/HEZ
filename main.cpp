@@ -4,6 +4,7 @@
 #include "color.h"
 #include "matrix.h"
 #include "renderer.h"
+#include "input.h"
 using namespace hez;
 
 #define SCREEN_SPACE_X(x) ((int)(((x)+1.0f) * WINDOW_WIDTH * 0.5f))
@@ -97,25 +98,31 @@ DWORD WINAPI tickThreadProc(HANDLE handle) {
   hdcMem = CreateCompatibleDC( hdc );
   HBITMAP hbmOld = (HBITMAP)SelectObject( hdcMem, hbmp );
   int delay = 1000 / FPS;
-  //POINT lmp;
-  //GetCursorPos(&lmp);
   while(true) {
+  	//process input from keyboard
+  	if(isKeyDown(VK_W)) camPos = camPos +  camCurDir * camSpeed;     
+	if(isKeyDown(VK_S)) camPos = camPos - camCurDir * camSpeed;
+	if(isKeyDown(VK_A)) camPos = camPos +  camCurRight * camSpeed;
+  	if(isKeyDown(VK_D)) camPos = camPos - camCurRight * camSpeed;
+  	if(isKeyDown(VK_Q)) camPos = camPos + camCurUp * camSpeed;
+  	if(isKeyDown(VK_E)) camPos = camPos -  camCurUp * camSpeed;
+  	if(isKeyDown(VK_M)) PostMessage(hwnd, WM_CLOSE, NULL, NULL);
+  	//mouse lock & update mouse delta
   	POINT mp;
   	GetCursorPos(&mp);
   	mouseDeltaX += camRotSpeed * (mp.x - screenCenterX) / (float)WINDOW_WIDTH;
   	mouseDeltaY -= camRotSpeed * (mp.y - screenCenterY) / (float)WINDOW_HEIGHT;
   	SetCursorPos((int)screenCenterX, (int)screenCenterY);
-  	//
+  	//update camera matrix & view matrix + update camera vectors
   	camRotation = matrix::createRotationX(mouseDeltaY) *  matrix::createRotationY(mouseDeltaX);
   	camCurRight = camRotation.transform(camRight);
   	camCurDir = camRotation.transform(camDir);
   	camCurUp = camRotation.transform(camUp);
 	viewMatrix = matrix::createLookAt(camPos, camPos + camCurDir, camCurUp);
-	//
+	//render
     drawFrame( );
     BitBlt( hdc, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, hdcMem, 0, 0, SRCCOPY );
     Sleep( delay );
-    //lmp = mp;
   }
   SelectObject( hdcMem, hbmOld );
   DeleteDC( hdc );
@@ -175,24 +182,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
       				break;
 			}
       		break;
-      	case WM_CHAR:
-      		switch(wParam) {
-      		 	case 'w': camPos = camPos +  camCurDir * camSpeed;
-				break;	
-				case 's': camPos = camPos - camCurDir * camSpeed;
-				break;
-				case 'a': camPos = camPos +  camCurRight * camSpeed;
-				break;	
-				case 'd': camPos = camPos - camCurRight * camSpeed;
-				break;
-				case 'q': camPos = camPos + camCurUp * camSpeed;
-				break;
-				case 'e': camPos = camPos -  camCurUp * camSpeed;
-				break;
-				case 'm': PostQuitMessage(0);
-				break;
-			}
-			break;
 		case WM_DESTROY: {
 			PostQuitMessage(0);
 			break;

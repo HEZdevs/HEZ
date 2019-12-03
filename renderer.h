@@ -1,5 +1,5 @@
-#ifndef RENDERER_H
-#define RENDERER_H
+#ifndef HEZ_RENDERER_H
+#define HEZ_RENDERER_H
 
 #include <algorithm>
 #include "vector.h"

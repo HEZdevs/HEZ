@@ -1,5 +1,5 @@
-#ifndef MATRIX_H
-#define MATRIX_H
+#ifndef HEZ_MATRIX_H
+#define HEZ_MATRIX_H
 
 #include <cmath>
 #include "vector.h"

@@ -1,5 +1,5 @@
-#ifndef COLOR_H
-#define COLOR_H
+#ifndef HEZ_COLOR_H
+#define HEZ_COLOR_H
 
 namespace hez {
 	struct color {

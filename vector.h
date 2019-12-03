@@ -1,5 +1,5 @@
-#ifndef VECTOR_H
-#define VECTOR_H
+#ifndef HEZ_VECTOR_H
+#define HEZ_VECTOR_H
 
 #include <cmath>
 
