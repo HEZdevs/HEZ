@@ -1,95 +1,12 @@
 #include <windows.h>
-#include <sstream>
-#include "vector.h"
-#include "color.h"
-#include "matrix.h"
 #include "renderer.h"
-#include "input.h"
-using namespace hez;
-
-#define SCREEN_SPACE_X(x) ((int)(((x)+1.0f) * WINDOW_WIDTH * 0.5f))
-#define SCREEN_SPACE_Y(y) ((int)(((y)+1.0f) * WINDOW_HEIGHT * 0.5f))
-#define DBG_MSG(x) { std::stringstream ss; ss << x; MessageBox(hwnd, ss.str().c_str(), "DBG_MSG", 0); }
-
-#define WINDOW_CAPTION "HEZ"
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
-#define FPS 50
+#include "base.h"
 
 //global
 HBITMAP hbmp;
 HANDLE hTickThread;
 HWND hwnd;
 HDC hdcMem;
-
-float mouseDeltaX = 0.0f, mouseDeltaY = 0.0f;
-
-//
-vector camPos = vector::zero;
-vector camUp = vector::unitY;
-vector camDir = vector(0, 0, 1.0f);
-vector camRight = vector(1.0f, 0, 0);
-
-vector camCurRight = camRight;
-vector camCurDir = camDir;
-vector camCurUp = camUp;
-
-vector cubePosition = vector(-0.5f, -0.5f, 3);
-//vector cubeScale = vector(1.0f, 1.0f, 1.0f);
-vector cubeRotation = vector(0.0f, 0.0f, 0.0f);
-
-float screenCenterX = WINDOW_WIDTH / 2.0f;
-float screenCenterY = WINDOW_HEIGHT / 2.0f;
-
-//
-float fovRad = 0.7f; 
-float zNearPlane = 0.1f;
-float zFarPlane = 100.0f;
-float camSpeed = 0.07f;
-float camRotSpeed = 0.4f;
-//
-vector vertices[8] = { vector(0, 0, 0), vector(0,0,1), vector(1,0,1), vector(1,0,0), vector(1,1,0), vector(0,1,0), vector(0,1,1), vector(1,1,1) };
-int faces[12][3] = { {0, 1, 2}, {0, 2, 3}, {0, 3, 4}, {0, 4, 5}, {0, 1, 6}, {0, 6, 5}, {3, 2, 7}, {3, 7, 4}, {4, 5, 6}, {4, 6, 7}, {1, 2, 7}, {1, 7, 6} };
-
-//
-matrix projectionMatrix;
-matrix viewMatrix;
-matrix worldMatrix;
-matrix camRotation;
-
-void line(const color& cl, vector a, vector b)
-{
-	a = worldMatrix.transform(a);
-	b = worldMatrix.transform(b);
-	a = viewMatrix.transform(a);
-	b = viewMatrix.transform(b);
-	a = projectionMatrix.transform(a);
-	b = projectionMatrix.transform(b);
-	rDrawLine(cl, SCREEN_SPACE_X(a.x), SCREEN_SPACE_Y(a.y), SCREEN_SPACE_X(b.x), SCREEN_SPACE_Y(b.y));
-}
-
-void initRenderer()
-{
-	rInitialize(WINDOW_WIDTH, WINDOW_HEIGHT);
-	projectionMatrix = matrix::createProjectionPerspective(fovRad, (float)WINDOW_WIDTH / WINDOW_HEIGHT, zNearPlane, zFarPlane);
-	worldMatrix = matrix::createTranslation(vector(0, 0, 3));
-}
-
-void drawFrame() {
-  	rFill(color::rgba(0, 0, 0, 255));
-  	matrix cubeWorld = matrix::createRotationX(cubeRotation.x) * matrix::createRotationY(cubeRotation.y) * matrix::createRotationZ(cubeRotation.z);
-  	cubeWorld = cubeWorld * matrix::createTranslation(cubePosition);
-  	for(int i = 0; i < 12; i++)
- 	{
-  		vector a = cubeWorld.transform(vertices[faces[i][0]]);
-  		vector b = cubeWorld.transform(vertices[faces[i][1]]);
-  		vector c = cubeWorld.transform(vertices[faces[i][2]]);
-  		line(color::rgba(0, 255, 0, 255),  a, b);
-  		line(color::rgba(0, 255, 0, 255),  b, c);
- 	 	line(color::rgba(0, 255, 0, 255),  c, a);
-  	}
-}
-
 
 DWORD WINAPI tickThreadProc(HANDLE handle) {
   Sleep( 50 );
@@ -99,28 +16,8 @@ DWORD WINAPI tickThreadProc(HANDLE handle) {
   HBITMAP hbmOld = (HBITMAP)SelectObject( hdcMem, hbmp );
   int delay = 1000 / FPS;
   while(true) {
-  	//process input from keyboard
-  	if(isKeyDown(VK_W)) camPos = camPos +  camCurDir * camSpeed;     
-	if(isKeyDown(VK_S)) camPos = camPos - camCurDir * camSpeed;
-	if(isKeyDown(VK_A)) camPos = camPos +  camCurRight * camSpeed;
-  	if(isKeyDown(VK_D)) camPos = camPos - camCurRight * camSpeed;
-  	if(isKeyDown(VK_Q)) camPos = camPos + camCurUp * camSpeed;
-  	if(isKeyDown(VK_E)) camPos = camPos -  camCurUp * camSpeed;
-  	if(isKeyDown(VK_M)) PostMessage(hwnd, WM_CLOSE, NULL, NULL);
-  	//mouse lock & update mouse delta
-  	POINT mp;
-  	GetCursorPos(&mp);
-  	mouseDeltaX += camRotSpeed * (mp.x - screenCenterX) / (float)WINDOW_WIDTH;
-  	mouseDeltaY -= camRotSpeed * (mp.y - screenCenterY) / (float)WINDOW_HEIGHT;
-  	SetCursorPos((int)screenCenterX, (int)screenCenterY);
-  	//update camera matrix & view matrix + update camera vectors
-  	camRotation = matrix::createRotationX(mouseDeltaY) *  matrix::createRotationY(mouseDeltaX);
-  	camCurRight = camRotation.transform(camRight);
-  	camCurDir = camRotation.transform(camDir);
-  	camCurUp = camRotation.transform(camUp);
-	viewMatrix = matrix::createLookAt(camPos, camPos + camCurDir, camCurUp);
-	//render
-    drawFrame( );
+  	hez::bUpdate();
+    hez::bDraw();
     BitBlt( hdc, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, hdcMem, 0, 0, SRCCOPY );
     Sleep( delay );
   }
@@ -147,7 +44,7 @@ void MakeSurface(HWND hwnd) {
   bmi.bmiColors[0].rgbReserved = 0;
   HDC hdc = GetDC( hwnd );
   // Create DIB section to always give direct access to pixels
-  hbmp = CreateDIBSection( hdc, &bmi, DIB_RGB_COLORS, (void**)&colorBuffer, NULL, 0 );
+  hbmp = CreateDIBSection( hdc, &bmi, DIB_RGB_COLORS, (void**)&hez::colorBuffer, NULL, 0 );
   DeleteDC( hdc );
   // Create a new thread to use as a timer
   hTickThread = CreateThread( NULL, NULL, &tickThreadProc, NULL, NULL, NULL );
@@ -157,30 +54,8 @@ void MakeSurface(HWND hwnd) {
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	switch(Message) {
 		case WM_CREATE:
-			initRenderer(); 
+			hez::bInitialize(hwnd); 
        		MakeSurface( hwnd );
-      		break;
-      	case WM_KEYDOWN: 
-      		switch(wParam) {
-      			case VK_UP:
-      				cubePosition.z += 0.5f;
-      				break;
-      			case VK_LEFT:
-      				cubePosition.x -= 0.5f;
-      				break;
-      			case VK_DOWN: 
-      				cubePosition.z -= 0.5f;
-      				break;
-      			case VK_RIGHT: 
-      				cubePosition.x += 0.5f;
-      				break;
-      			case VK_SHIFT:
-      				cubePosition.y += 0.5f;
-      				break;
-      			case VK_SPACE:
-      				cubePosition.y -= 0.5f;
-      				break;
-			}
       		break;
 		case WM_DESTROY: {
 			PostQuitMessage(0);

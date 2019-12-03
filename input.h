@@ -1,6 +1,8 @@
 #ifndef HEZ_INPUT_H
 #define HEZ_INPUT_H
 
+#include <windows.h>
+
 #define VK_D0 0x30
 #define VK_D1 0x31
 #define VK_D2 0x32
