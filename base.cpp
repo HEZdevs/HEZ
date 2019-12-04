@@ -1,13 +1,15 @@
+#include <cmath>
 #include "vector.h"
 #include "matrix.h"
 #include "input.h"
 #include "color.h"
 #include "base.h"
 #include "renderer.h"
+#include "marching_cubes_2d.h"
 
 #include <sstream>
 //----------------------------------------------------MACRO---------------------------------------------------------//
-#define DBG_MSG(x) { std::stringstream ss; ss << x; MessageBox(hwnd, ss.str().c_str(), "DBG_MSG", 0); }
+#define DBG(x) { std::stringstream ss; ss << x; MessageBox(hwnd, ss.str().c_str(), "DBG_MSG", 0); }
 #define SCREEN_SPACE_X(x) ((int)(((x)+1.0f) * WINDOW_WIDTH * 0.5f))
 #define SCREEN_SPACE_Y(y) ((int)(((y)+1.0f) * WINDOW_HEIGHT * 0.5f))
 
@@ -59,33 +61,43 @@ void bInitialize(HWND _hwnd) {
 	hwnd = _hwnd;
 	rInitialize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	projectionMatrix = matrix::createProjectionPerspective(fovRad, (float)WINDOW_WIDTH / WINDOW_HEIGHT, zNearPlane, zFarPlane);
+	
+	int fieldW = 400, fieldH = 300;
+	mc2dInitialize(fieldW, fieldH, 2, 2);
+	for(int x = 0; x < fieldW; x++)
+	for(int y = 0; y < fieldH; y++) mc2dSetValue(x, y, std::sqrt((x - fieldW / 2)*(x - fieldW / 2) + (y - fieldH / 2)*(y - fieldH / 2)));
+	
 }
+
+bool mc = false;
 void bUpdate() {
-		//process input from keyboard
-	  	if(isKeyDown(VK_W)) camPos = camPos +  camCurDir * camSpeed;     
-		if(isKeyDown(VK_S)) camPos = camPos - camCurDir * camSpeed;
-		if(isKeyDown(VK_A)) camPos = camPos +  camCurRight * camSpeed;
-	  	if(isKeyDown(VK_D)) camPos = camPos - camCurRight * camSpeed;
-	  	if(isKeyDown(VK_Q)) camPos = camPos + camCurUp * camSpeed;
-	  	if(isKeyDown(VK_E)) camPos = camPos -  camCurUp * camSpeed;
-	  	if(isKeyDown(VK_M)) PostMessage(hwnd, WM_CLOSE, NULL, NULL);
-	  	//mouse lock & update mouse delta
-	  	POINT mp;
-	  	GetCursorPos(&mp);
-	  	mouseDeltaX += camRotSpeed * (mp.x - screenCenterX) / (float)WINDOW_WIDTH;
-	  	mouseDeltaY -= camRotSpeed * (mp.y - screenCenterY) / (float)WINDOW_HEIGHT;
-	  	SetCursorPos((int)screenCenterX, (int)screenCenterY);
-	  	//update camera matrix & view matrix + update camera vectors
-	  	camRotation = matrix::createRotationX(mouseDeltaY) *  matrix::createRotationY(mouseDeltaX);
-	  	camCurRight = camRotation.transform(camRight);
-	  	camCurDir = camRotation.transform(camDir);
-	  	camCurUp = camRotation.transform(camUp);
-		viewMatrix = matrix::createLookAt(camPos, camPos + camCurDir, camCurUp);
+	if(!mc) mc2dDraw(color::rgba(255, 0, 0, 255), 100.0f); //run draw once because it is expensive
+	mc = true;	
+	/*//process input from keyboard
+	if(isKeyDown(VK_W)) camPos = camPos +  camCurDir * camSpeed;     
+	if(isKeyDown(VK_S)) camPos = camPos - camCurDir * camSpeed;
+	if(isKeyDown(VK_A)) camPos = camPos +  camCurRight * camSpeed;
+	if(isKeyDown(VK_D)) camPos = camPos - camCurRight * camSpeed;
+	if(isKeyDown(VK_Q)) camPos = camPos + camCurUp * camSpeed;
+	if(isKeyDown(VK_E)) camPos = camPos -  camCurUp * camSpeed;
+	if(isKeyDown(VK_M)) PostMessage(hwnd, WM_CLOSE, NULL, NULL);
+	//mouse lock & update mouse delta
+	POINT mp;
+	GetCursorPos(&mp);
+	mouseDeltaX += camRotSpeed * (mp.x - screenCenterX) / (float)WINDOW_WIDTH;
+	mouseDeltaY -= camRotSpeed * (mp.y - screenCenterY) / (float)WINDOW_HEIGHT;
+	SetCursorPos((int)screenCenterX, (int)screenCenterY);
+	//update camera matrix & view matrix + update camera vectors
+	camRotation = matrix::createRotationX(mouseDeltaY) *  matrix::createRotationY(mouseDeltaX);
+	camCurRight = camRotation.transform(camRight);
+	camCurDir = camRotation.transform(camDir);
+	camCurUp = camRotation.transform(camUp);
+	viewMatrix = matrix::createLookAt(camPos, camPos + camCurDir, camCurUp);*/
 }
 void bDraw() {
 	//clear screen
-	rFill(color::rgba(0, 0, 0, 255)); 
-	//draw cube
+	//rFill(color::rgba(0, 0, 0, 255)); 
+	/*//draw cube
 	matrix cubeWorld = matrix::createRotationX(cubeRotation.x) * matrix::createRotationY(cubeRotation.y) * matrix::createRotationZ(cubeRotation.z);
 	cubeWorld = cubeWorld * matrix::createTranslation(cubePosition);
 	for(int i = 0; i < 12; i++)
@@ -96,7 +108,7 @@ void bDraw() {
 		line(color::rgba(0, 255, 0, 255),  a, b);
 		line(color::rgba(0, 255, 0, 255),  b, c);
 		line(color::rgba(0, 255, 0, 255),  c, a);
-	}
+	}*/
 }
 
 }
