@@ -42,6 +42,10 @@ namespace hez {
 			colorBuffer[i] = cl;
 		}
 	}
+	inline void rSetPixelRaw(const color& cl, int i) {
+		depthBuffer[i] = DEPTH_MAX;
+		colorBuffer[i] = cl;
+	}
 	inline void rFill(const color& cl) {
 		std::fill(colorBuffer, colorBuffer + bufferSize, cl);
 		std::fill(depthBuffer, depthBuffer + bufferSize, DEPTH_MAX);
