@@ -7,7 +7,9 @@
 #include "libs/renderer.h"
 #include "libs/marching_cubes_2d.h"
 #include <CL/opencl.h>
+#include "libs/logger.h"
 #include "libs/shaders.h"
+using hez::logger::log;
 
 #include <sstream>
 //----------------------------------------------------MACRO---------------------------------------------------------//
@@ -85,6 +87,13 @@ void compute() {
 }
 //------------------------------------------------BASE METHODS------------------------------------------------------//
 void bInitialize(HWND _hwnd) {
+	logger::start("test_log");
+	log(HEZ_LOGGER_INFO, "Azamat");
+	log(HEZ_LOGGER_WARNING, "^bAge^b: %i", 32);
+	log(HEZ_LOGGER_WARNING, "^sSudim^s: %B %b", true, false);
+	log(HEZ_LOGGER_INFO, "Gender: %c", 'M');
+	log(HEZ_LOGGER_INFO, "Weight: %f", 76.3123213211f);
+	log(HEZ_LOGGER_ERROR, "^u^iPI^u^i: %d", 3.14159265359);
 	hwnd = _hwnd;
 	//ѕозвол€ет выводить в консоль, полезно дл€ отладки.
 	AllocConsole();
