@@ -26,7 +26,7 @@ namespace hez { namespace shaders {
 	HEZ_CL_SOURCE loadSourceFromFile(char* fileName) {
 		FILE *fp = fopen(fileName, "r");
 		if (!fp) {
-			fprintf(stderr, "SHADERS.CPP -> LoadSourceFromFile.\n");
+			printf("LoadSourceFromFile error.\n");
 			exit(1);
 		}
 		size_t source_size;
@@ -46,7 +46,16 @@ namespace hez { namespace shaders {
 	cl_kernel createKernelFromSource(const char* kernel_name, HEZ_CL_SOURCE source) {
 		int errcode_ret;
 		cl_program program = clCreateProgramWithSource(context, 1, (const char **)&source.str, (const size_t *)&source.size, &errcode_ret);
+		printf("CREATE PROGRAM WITH SOURCE %d\n", errcode_ret);
 		errcode_ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
+		if (errcode_ret == CL_BUILD_PROGRAM_FAILURE) {
+			printf("CL_BUILD_PROGRAM_FAILURE %d\n", errcode_ret);
+		    size_t log_size;
+		    clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+		    char *log = (char *) malloc(log_size);
+		    clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
+		    printf("%s\n", log);
+		}
 		cl_kernel kernel = clCreateKernel(program, kernel_name, &errcode_ret);
 		return kernel;
 	}

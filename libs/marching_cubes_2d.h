@@ -1,7 +1,7 @@
 #ifndef HEZ_MARCHING_CUBES_2D
 #define HEZ_MARCHING_CUBES_2D
 
-#include "color.h"
+#include "../types/color.h"
 
 namespace hez {
 	extern float** mc2d_array;

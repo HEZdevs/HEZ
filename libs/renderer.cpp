@@ -1,5 +1,5 @@
 #include <limits>
-#include "color.h"
+#include "../types/color.h"
 #include "renderer.h"
 
 #define MIN(__x, __y) ((__x) < (__y) ? (__x) : (__y))

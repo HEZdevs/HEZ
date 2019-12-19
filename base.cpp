@@ -1,13 +1,13 @@
 #include <cmath>
-#include "vector.h"
-#include "matrix.h"
-#include "input.h"
-#include "color.h"
+#include "types/vector.h"
+#include "types/matrix.h"
+#include "libs/input.h"
+#include "types/color.h"
 #include "base.h"
-#include "renderer.h"
-#include "marching_cubes_2d.h"
+#include "libs/renderer.h"
+#include "libs/marching_cubes_2d.h"
 #include <CL/opencl.h>
-#include "shaders.h"
+#include "libs/shaders.h"
 
 #include <sstream>
 //----------------------------------------------------MACRO---------------------------------------------------------//
@@ -60,48 +60,35 @@ void line(const color& cl, vector a, vector b)
 }
 */
 cl_kernel kernel;
-cl_float* memR;
-cl_float* memG;
-cl_float* memB;
+cl_float4* memColor;
 cl_uint time = 0;
 void compute() {
+	int ret;
 	cl_int width = WINDOW_WIDTH;
 	cl_int height = WINDOW_HEIGHT;
-	int ret;
 	int mem_length = width * height;		
-	cl_mem mem_objR = clCreateBuffer(shaders::context, CL_MEM_WRITE_ONLY, mem_length * sizeof(cl_float), NULL, &ret);
-	cl_mem mem_objG = clCreateBuffer(shaders::context, CL_MEM_WRITE_ONLY, mem_length * sizeof(cl_float), NULL, &ret);
-	cl_mem mem_objB = clCreateBuffer(shaders::context, CL_MEM_WRITE_ONLY, mem_length * sizeof(cl_float), NULL, &ret);
-	//clEnqueueWriteBuffer(shaders::command_queue, mem_obj, CL_TRUE, 0, mem_length * sizeof(cl_float), mem, 0, NULL, NULL);
+	size_t mem_size = mem_length * sizeof(cl_float4);
+	cl_mem mem_objColor = clCreateBuffer(shaders::context, CL_MEM_WRITE_ONLY, mem_size, NULL, &ret);
+	//clEnqueueWriteBuffer(shaders::command_queue, mem_obj, CL_TRUE, 0, mem_size, memColor, 0, NULL, NULL);
 	
-	clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&mem_objR);
-	clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&mem_objG);
-	clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *)&mem_objB);
-	clSetKernelArg(kernel, 3, sizeof(cl_int), (void *)&width);
-	clSetKernelArg(kernel, 4, sizeof(cl_int), (void *)&height);
-	clSetKernelArg(kernel, 5, sizeof(cl_int), (void *)&time);
+	clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&mem_objColor);
+	clSetKernelArg(kernel, 1, sizeof(cl_int), (void *)&width);
+	clSetKernelArg(kernel, 2, sizeof(cl_int), (void *)&height);
+	clSetKernelArg(kernel, 3, sizeof(cl_int), (void *)&time);
 		
-	memR = (cl_float *)malloc(sizeof(cl_float) * mem_length);
-	memG = (cl_float *)malloc(sizeof(cl_float) * mem_length);
-	memB = (cl_float *)malloc(sizeof(cl_float) * mem_length);	
+	memColor = (cl_float4 *)malloc(mem_size);
 	
 	size_t global_work_size[1] = { mem_length };
-    clEnqueueNDRangeKernel(shaders::command_queue, kernel, 1, NULL, global_work_size, NULL, 0, NULL, NULL);
-    	
-    clEnqueueReadBuffer(shaders::command_queue, mem_objR, CL_TRUE, 0, mem_length * sizeof(cl_float), memR, 0, NULL, NULL);
-    clEnqueueReadBuffer(shaders::command_queue, mem_objG, CL_TRUE, 0, mem_length * sizeof(cl_float), memG, 0, NULL, NULL);
-    clEnqueueReadBuffer(shaders::command_queue, mem_objB, CL_TRUE, 0, mem_length * sizeof(cl_float), memB, 0, NULL, NULL);
-    
-    clReleaseMemObject(mem_objR);
-    clReleaseMemObject(mem_objG);
-    clReleaseMemObject(mem_objB);
+    ret = clEnqueueNDRangeKernel(shaders::command_queue, kernel, 1, NULL, global_work_size, NULL, 0, NULL, NULL);
+    ret = clEnqueueReadBuffer(shaders::command_queue, mem_objColor, CL_TRUE, 0, mem_size, memColor, 0, NULL, NULL);
+    clReleaseMemObject(mem_objColor);
 }
 //------------------------------------------------BASE METHODS------------------------------------------------------//
 void bInitialize(HWND _hwnd) {
 	hwnd = _hwnd;
 	//Позволяет выводить в консоль, полезно для отладки.
-	//AllocConsole();
-	//freopen("CONOUT$", "wb", stdout);
+	AllocConsole();
+	freopen("CONOUT$", "wb", stdout);
 	//Инициализация renderer.h
 	rInitialize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	//Инициализация shaders.h [OpenCL]
@@ -113,6 +100,8 @@ void bInitialize(HWND _hwnd) {
 	//projectionMatrix = matrix::createProjectionPerspective(fovRad, (float)WINDOW_WIDTH / WINDOW_HEIGHT, zNearPlane, zFarPlane);
 }
 void bUpdate() {	
+	compute();
+	time++;
 	/*//process input from keyboard
 	if(isKeyDown(VK_W)) camPos = camPos +  camCurDir * camSpeed;     
 	if(isKeyDown(VK_S)) camPos = camPos - camCurDir * camSpeed;
@@ -135,14 +124,8 @@ void bUpdate() {
 	viewMatrix = matrix::createLookAt(camPos, camPos + camCurDir, camCurUp);*/
 }
 void bDraw() {
-	compute();
-	time++;
-	for(int i = 0; i < WINDOW_HEIGHT; i++)
-	for(int j = 0; j < WINDOW_WIDTH; j++) 
-	{
-		int id = i * WINDOW_WIDTH + j;
-		rSetPixelRaw(color::rgba((unsigned char)(memR[id] * 255.0f),(unsigned char)(memG[id] * 255.0f),(unsigned char)(memB[id] * 255.0f),255), id);
-	}
+	for(int id = 0; id < bufferSize; id++)
+		rSetPixelRaw(color::rgba((unsigned char)(memColor[id].s[0] * 255.0f),(unsigned char)(memColor[id].s[1] * 255.0f),(unsigned char)(memColor[id].s[2] * 255.0f),(unsigned char)(memColor[id].s[3] * 255.0f)), id);
 	/*//clear screen
 	rFill(color::rgba(0, 0, 0, 255)); 
 	//draw cube

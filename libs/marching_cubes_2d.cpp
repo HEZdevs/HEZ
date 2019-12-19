@@ -1,5 +1,5 @@
 #include "renderer.h"
-#include "color.h"
+#include "../types/color.h"
 #define _mc2d_bool(x,y,v) (mc2d_array[(y)][(x)] >= (v))
 
 namespace hez {
